@@ -5,8 +5,8 @@ import Control.Monad.Trans
 import Control.Monad
 import Data.List
 
-prop_Simple = forAll ballotSheetsSimple $ (\xss -> (not . null . join) xss ==> winner losersOneAtATime xss `elem` join xss)
-prop_MajorityCriteria = forAll ballotSheetsMajorityCriteria $ (\xss -> (not . null . join) xss  ==> winner losersOneAtATime (map ((:[]) . head) (filter (not . null) xss)) == winner losersOneAtATime xss)
+prop_Simple w = forAll ballotSheetsSimple $ (\xss -> (not . null . join) xss ==> w xss `elem` join xss)
+prop_MajorityCriteria w = forAll ballotSheetsMajorityCriteria $ (\xss -> (not . null . join) xss  ==> w (map ((:[]) . head) (filter (not . null) xss)) == w xss)
 
 ballotSheetsSimple :: Gen [[Int]]
 ballotSheetsSimple = do
@@ -25,5 +25,9 @@ smallestPossibleMajority total
                            | otherwise = (total `div` 2) + 1
 
 main = do
-      quickCheck prop_Simple
-      quickCheck prop_MajorityCriteria
+      sequence $ map quickCheck [
+               prop_Simple winnerOne,
+               prop_Simple winnerPlurality,
+               prop_MajorityCriteria winnerOne,
+               prop_MajorityCriteria winnerPlurality
+               ]
