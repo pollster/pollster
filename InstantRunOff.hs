@@ -7,22 +7,23 @@ import Control.Monad
 import Control.Applicative
 import Debug.Trace
 
+winner losersPicker ballotSheets
+               | (length (join ballotSheets) == 0) = error "WTF"
+               | ((length (candidatesFromBallotSheets ballotSheets)) == 1) = (head . join) ballotSheets
+               | otherwise = winner losersPicker $ map (delete (losersPicker ballotSheets)) ballotSheets
 
-winners losersPicker ballotSheets
-               | ((length $ (nub . join) ballotSheets) == 1) = (head . join) ballotSheets
-               | otherwise = winners losersPicker $ map (delete (losersPicker ballotSheets)) ballotSheets
-
-losersOneAtATime ballotSheets =
-                let candidates = head ballotSheets
+losersOneAtATime ballotSheets  =
+                let
+                  candidates = candidatesFromBallotSheets ballotSheets
+                  topRankers = topRankersFromBallotSheets ballotSheets
                 in
-                lowestRankedCandidateDetail candidates (topRankers ballotSheets)
+                lowestRankedCandidateDetail candidates topRankers
 
 countIn xs x = length (filter (== x) xs)
 
-topRankers ballotSheets = map head ballotSheets
+topRankersFromBallotSheets ballotSheets = map head $ filter (\xs -> length xs /= 0) ballotSheets
 
-main = do
-   putStrLn $ show $ winners losersOneAtATime vm
+candidatesFromBallotSheets ballotSheets = (nub . join) ballotSheets
 
 lowestRankedCandidateDetail candidates topRankers = minimumBy (compare `on` (countIn topRankers)) candidates
 
