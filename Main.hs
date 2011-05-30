@@ -8,6 +8,7 @@ import Database.Persist.Postgresql
 import Control.Monad
 import Control.Monad.IO.Class (liftIO)
 import InstantRunOff
+import Data.List(groupBy, sortBy)
 
 connstr = "user=postgres password= host=localhost port=5432 dbname=metoo"
 
@@ -17,7 +18,7 @@ BallotSheet
 Candidate
     name String Gt
 Vote
-    ballotSheetId BallotSheetId 
+    ballotSheetId BallotSheetId
     candidateId CandidateId
     rank Int Gt
 |]
@@ -31,7 +32,7 @@ main = withPostgresqlPool connstr 1 $ runSqlPool  $ do
     voteIds <- mapM (\(bid, cid, rank) -> insert (Vote (ballotSheetIds !! bid) (candidateIds !! cid) rank)) createTestData
     votes <- selectList [VoteRankGt 0] [] 0 0
     voteValues <- return (map snd $ votes)
-    liftIO $ print $ winners $ map2 voteCandidateId $ groupBy (\left right -> (voteBallotSheetId left) == (voteBallotSheetId right)) $ sortBy (compare `on` voteBallotSheetId) voteValues
+    liftIO $ print $ winnerOne $ map2 voteCandidateId $ groupBy (\left right -> (voteBallotSheetId left) == (voteBallotSheetId right)) $ sortBy (compare `on` voteBallotSheetId) voteValues
     return ()
 vm = [
  [1, 3, 1, 1, 2],
