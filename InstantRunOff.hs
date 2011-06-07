@@ -3,6 +3,7 @@ import Data.List
 import Data.Function
 import Data.Functor
 import Data.Maybe
+import Data.Ord
 import Control.Monad
 import Control.Applicative
 import Debug.Trace
@@ -25,9 +26,10 @@ countIn xs x = length (elemIndices x xs)
 
 topRankersFromBallotSheets ballotSheets = map head $ filter (not . null) ballotSheets
 
-candidatesFromBallotSheets ballotSheets = (nub . join) ballotSheets
+candidatesFromBallotSheets ::  (Eq a) => [[a]] -> [a]
+candidatesFromBallotSheets = nub . join
 
-lowestRankedCandidateDetail candidates topRankers = minimumBy (compare `on` (countIn topRankers)) candidates
+lowestRankedCandidateDetail candidates topRankers = minimumBy (comparing (countIn topRankers)) candidates
 
 winnerOne :: (Eq a) => [[a]] -> a
 winnerOne = winner losersOneAtATime
