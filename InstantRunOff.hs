@@ -1,4 +1,5 @@
 module InstantRunOff where
+import Util
 import Data.List
 import Data.Function
 import Data.Functor
@@ -8,31 +9,30 @@ import Control.Monad
 import Control.Applicative
 import Debug.Trace
 
-
 winner losersPicker ballotSheets
-               | (null . join) ballotSheets = error "WTF"
-               | (length . candidatesFromBallotSheets) ballotSheets == 1 = (head . join) ballotSheets
+               | isSingleton candidates = head candidates
                | otherwise = winner losersPicker $ map (delete loser) ballotSheets
                              where loser = losersPicker ballotSheets
+                                   candidates = candidatesFromBallotSheets ballotSheets
 
 losersOneAtATime ballotSheets  =
                 let
                   candidates = candidatesFromBallotSheets ballotSheets
-                  topRankers = topRankersFromBallotSheets ballotSheets
+                  topRanks = topRanksFromBallotSheets ballotSheets
                 in
-                lowestRankedCandidateDetail candidates topRankers
+                lowestRankCandidate candidates topRanks
 
 countIn xs x = length (elemIndices x xs)
 
-topRankersFromBallotSheets ballotSheets = map head $ filter (not . null) ballotSheets
+topRanksFromBallotSheets ballotSheets = map head (deleteEmptySublists ballotSheets)
 
 candidatesFromBallotSheets ::  (Eq a) => [[a]] -> [a]
 candidatesFromBallotSheets = nub . join
 
-lowestRankedCandidateDetail candidates topRankers = minimumBy (comparing (countIn topRankers)) candidates
+lowestRankCandidate candidates topRankers = minimumBy (comparing (countIn topRankers)) candidates
 
-winnerOne :: (Eq a) => [[a]] -> a
+winnerOne ::  Eq a => [[a]] -> a
 winnerOne = winner losersOneAtATime
 
 winnerPlurality :: (Eq a) => [[a]] -> a
-winnerPlurality ballotSheets = winnerOne $ map ((:[]) . head) (filter (not. null) ballotSheets)
+winnerPlurality ballotSheets = winnerOne $ map (take 1) (deleteEmptySublists ballotSheets)
