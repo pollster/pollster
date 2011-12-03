@@ -1,1 +1,5 @@
 *.o
+dist/setup-config
+*.hi
+static/tmp
+dist/package.conf.inplace

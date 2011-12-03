@@ -13,19 +13,6 @@ import InstantRunOff
 import Data.List(groupBy, sortBy)
 
 
-connstr = "user=postgres password= host=localhost port=5432 dbname=metoo"
-
-share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persist|
-BallotSheet
-    name String
-Candidate
-    name String
-Vote
-    ballotSheetId BallotSheetId
-    candidateId CandidateId
-    rank Int
-|]
-
 main :: IO()
 main = withPostgresqlPool connstr 1 $ runSqlPool $ do
     runMigration migrateAll
